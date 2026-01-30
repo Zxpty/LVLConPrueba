@@ -1,5 +1,6 @@
 package com.example.lvlconprueba.data.repositories
 
+import android.util.Log
 import com.example.lvlconprueba.data.api.UserApiService
 import com.example.lvlconprueba.data.dto.UpdateUserRequestDto
 import com.example.lvlconprueba.data.mapper.toDomain
@@ -34,13 +35,14 @@ class UserRepositoryImpl @Inject constructor(
                 usuario = user.usuario,
                 nombre = user.nombre,
                 apellido = user.apellido,
-                password = user.password,
+                password = if (user.password == "") "1234" else user.password,
                 empresa = user.empresa,
                 cargoCodigo = user.cargoCodigo,
                 correo = user.correo,
                 telefono = user.telefono,
                 url = user.url
             )
+            Log.d("UserRepositoryImpl", "Debug backend: $request")
             val response = apiService.saveOrUpdateUser(request)
             if (response.isSuccessful && response.body() != null) {
                 val dto = response.body()!!
