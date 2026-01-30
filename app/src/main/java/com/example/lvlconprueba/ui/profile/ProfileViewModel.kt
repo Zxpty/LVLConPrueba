@@ -61,16 +61,12 @@ class ProfileViewModel @Inject constructor(
     fun onFieldChange(
         nombre: String? = null,
         apellido: String? = null,
-        empresa: String? = null,
-        cargoCodigo: String? = null,
         telefono: String? = null,
         correo: String? = null
     ) {
         _formState.value = _formState.value.copy(
             nombre = nombre ?: _formState.value.nombre,
             apellido = apellido ?: _formState.value.apellido,
-            empresa = empresa ?: _formState.value.empresa,
-            cargoCodigo = cargoCodigo ?: _formState.value.cargoCodigo,
             telefono = telefono ?: _formState.value.telefono,
             correo = correo ?: _formState.value.correo
         )
@@ -82,7 +78,6 @@ class ProfileViewModel @Inject constructor(
             updateUserProfileUseCase(_formState.value).collect { result ->
                 result.onSuccess {
                     _uiState.value = ProfileUiState.Updated("Perfil actualizado correctamente")
-                    _uiState.value = ProfileUiState.Success
                 }.onFailure { error ->
                     _uiState.value = ProfileUiState.Error(error.message ?: "Error al actualizar perfil")
                 }

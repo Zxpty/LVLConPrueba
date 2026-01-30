@@ -31,22 +31,16 @@ class UserRepositoryImpl @Inject constructor(
         return try {
             val request = UpdateUserRequestDto(
                 usuarioId = user.usuarioId,
-                rolId = user.rolId,
-                usuario = user.usuario,
                 nombre = user.nombre,
                 apellido = user.apellido,
-                password = if (user.password == "") "1234" else user.password,
-                empresa = user.empresa,
-                cargoCodigo = user.cargoCodigo,
                 correo = user.correo,
                 telefono = user.telefono,
-                url = user.url
             )
             Log.d("UserRepositoryImpl", "Debug backend: $request")
             val response = apiService.saveOrUpdateUser(request)
             if (response.isSuccessful && response.body() != null) {
                 val dto = response.body()!!
-                if (dto.codigo == "200" || dto.codigo == "201" || dto.mensaje?.contains("correctamente", ignoreCase = true) == true) {
+                if (dto.codigo == "200" || dto.codigo == "201" || dto.codigo == "success" || dto.mensaje?.contains("correctamente", ignoreCase = true) == true) {
                     Result.success(Unit)
                 } else {
                     Result.failure(Exception(dto.mensaje ?: "Error al actualizar perfil"))

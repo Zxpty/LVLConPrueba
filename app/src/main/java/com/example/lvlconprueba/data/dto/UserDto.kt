@@ -13,16 +13,10 @@ data class UserDto(
 
 data class UpdateUserRequestDto(
     @SerializedName("usuarioId") val usuarioId: String,
-    @SerializedName("rolId") val rolId: String,
-    @SerializedName("usuario") val usuario: String,
     @SerializedName("nombre") val nombre: String,
     @SerializedName("apellido") val apellido: String,
-    @SerializedName("password") val password: String,
-    @SerializedName("empresa") val empresa: String,
-    @SerializedName("cargoCodigo") val cargoCodigo: String,
     @SerializedName("correo") val correo: String,
     @SerializedName("telefono") val telefono: String,
-    @SerializedName("url") val url: String
 )
 
 data class UpdateUserResponseDto(

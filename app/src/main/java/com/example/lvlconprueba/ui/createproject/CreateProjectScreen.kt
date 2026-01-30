@@ -28,8 +28,6 @@ import com.example.lvlconprueba.ui.home.getIconRes
 import java.text.SimpleDateFormat
 import java.util.*
 
-
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateProjectScreen(
@@ -39,6 +37,12 @@ fun CreateProjectScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val formState by viewModel.formState.collectAsState()
+
+    LaunchedEffect(Unit) {
+        if (uiState.isCreated) {
+            viewModel.resetForm()
+        }
+    }
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -80,158 +84,161 @@ fun CreateProjectScreen(
                 }
 
                 Box(modifier = Modifier.weight(1f)) {
-                    when (uiState) {
-                        is CreateProjectUiState.Loading -> {
-                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                CircularProgressIndicator(color = Color(0xFF2D7DFF))
+                    if (uiState.isLoading) {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator(color = Color(0xFF2D7DFF))
+                        }
+                    } else if (uiState.errorMessage != null && uiState.comboData == null) {
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Text(text = uiState.errorMessage!!, color = MaterialTheme.colorScheme.error)
+                            Button(onClick = { viewModel.loadComboData() }) {
+                                Text("Reintentar")
                             }
                         }
-                        is CreateProjectUiState.Error -> {
-                            val errorState = uiState as CreateProjectUiState.Error
-                            Column(
-                                modifier = Modifier.fillMaxSize(),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center
-                            ) {
-                                Text(text = errorState.message, color = MaterialTheme.colorScheme.error)
-                                Button(onClick = { viewModel.dismissError() }) {
-                                    Text("Reintentar")
-                                }
+                    } else {
+                        val comboData = uiState.comboData
+                        
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .verticalScroll(rememberScrollState()),
+                            verticalArrangement = Arrangement.spacedBy(20.dp)
+                        ) {
+                            if (uiState.errorMessage != null) {
+                                Text(
+                                    text = uiState.errorMessage!!,
+                                    color = MaterialTheme.colorScheme.error,
+                                    modifier = Modifier.padding(bottom = 8.dp)
+                                )
                             }
-                        }
-                        else -> {
-                            val comboData = (uiState as? CreateProjectUiState.Success)?.comboData
-                            
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .verticalScroll(rememberScrollState()),
-                                verticalArrangement = Arrangement.spacedBy(20.dp)
-                            ) {
-                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    Text(
-                                        text = "Icono del proyecto",
-                                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                                        color = Color(0xFF1A1A1A)
-                                    )
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(16.dp)
-                                    ) {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(72.dp)
-                                                .background(Color(0xFFF5F9FF), RoundedCornerShape(16.dp))
-                                                .border(1.dp, Color(0xFFF0F0F0), RoundedCornerShape(16.dp)),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Icon(
-                                                painter = painterResource(getIconRes(formState.iconoCodigo)),
-                                                contentDescription = null,
-                                                tint = Color.Unspecified,
-                                                modifier = Modifier.size(36.dp)
-                                            )
-                                        }
-                                        
-                                        Row(
-                                            modifier = Modifier.clickable {
-                                                comboData?.iconos?.let { icons ->
-                                                    if (icons.isNotEmpty()) {
-                                                        val currentIndex = icons.indexOfFirst { it.codigo == formState.iconoCodigo }
-                                                        val nextIndex = (currentIndex + 1) % icons.size
-                                                        viewModel.onIconoChange(icons[nextIndex])
-                                                    }
-                                                }
-                                            },
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(4.dp)
-                                        ) {
-                                            Text(
-                                                text = "Cambiar icono aleatorio",
-                                                color = Color(0xFF9E9E9E),
-                                                style = MaterialTheme.typography.bodyMedium
-                                            )
-                                            Icon(
-                                                imageVector = Icons.Default.Refresh,
-                                                contentDescription = null,
-                                                tint = Color(0xFF2D7DFF),
-                                                modifier = Modifier.size(20.dp)
-                                            )
-                                        }
-                                    }
-                                }
-                                LvlTextField(
-                                    value = formState.nombre,
-                                    onValueChange = { viewModel.onNombreChange(it) },
-                                    label = "Nombre del proyecto",
-                                    placeholder = "Evento de aniversario"
-                                )
 
-                                LvlTextField(
-                                    value = formState.descripcion,
-                                    onValueChange = { viewModel.onDescripcionChange(it) },
-                                    label = "Descripción",
-                                    placeholder = "Descripción"
-                                )
-
-                                LvlDropdownField(
-                                    label = "Categoría del proyecto",
-                                    options = comboData?.categorias?.map { it.nombre ?: "" } ?: emptyList(),
-                                    selectedOption = comboData?.categorias?.find { it.id == formState.categoriaId }?.nombre,
-                                    onOptionSelected = { selected ->
-                                        val categoria = comboData?.categorias?.find { it.nombre == selected }
-                                        viewModel.onCategoriaChange(categoria)
-                                    }
-                                )
-
-                                LvlDropdownField(
-                                    label = "Estado del proyecto",
-                                    options = comboData?.estados?.map { it.nombre ?: "" } ?: emptyList(),
-                                    selectedOption = comboData?.estados?.find { it.codigo == formState.estadoCodigo }?.nombre,
-                                    onOptionSelected = { selected ->
-                                        val estado = comboData?.estados?.find { it.nombre == selected }
-                                        viewModel.onEstadoChange(estado)
-                                    }
-                                )
-
-                                DatePickerField(
-                                    value = formState.fechaInicio,
-                                    onValueChange = { viewModel.onFechaInicioChange(it) },
-                                    label = "Fecha de inicio",
-                                    placeholder = "Fecha de inicio"
-                                )
-
-                                DatePickerField(
-                                    value = formState.fechaFin,
-                                    onValueChange = { viewModel.onFechaFinChange(it) },
-                                    label = "Fecha de finalización",
-                                    placeholder = "Fecha de finalización"
+                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Text(
+                                    text = "Icono del proyecto",
+                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                    color = Color(0xFF1A1A1A)
                                 )
                                 Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(16.dp)
                                 ) {
-                                    Text(
-                                        text = "¿Compartir con otros miembros?",
-                                        color = Color(0xFF757575),
-                                        style = MaterialTheme.typography.bodyLarge
-                                    )
-                                    Switch(
-                                        checked = formState.compartir,
-                                        onCheckedChange = { viewModel.onCompartirChange(it) },
-                                        colors = SwitchDefaults.colors(
-                                            checkedThumbColor = Color.White,
-                                            checkedTrackColor = Color(0xFF2D7DFF),
-                                            uncheckedThumbColor = Color.White,
-                                            uncheckedTrackColor = Color(0xFFE0E0E0),
-                                            uncheckedBorderColor = Color.Transparent
+                                    Box(
+                                        modifier = Modifier
+                                            .size(72.dp)
+                                            .background(Color(0xFFF5F9FF), RoundedCornerShape(16.dp))
+                                            .border(1.dp, Color(0xFFF0F0F0), RoundedCornerShape(16.dp)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(getIconRes(formState.iconoCodigo)),
+                                            contentDescription = null,
+                                            tint = Color.Unspecified,
+                                            modifier = Modifier.size(36.dp)
                                         )
-                                    )
+                                    }
+                                    
+                                    Row(
+                                        modifier = Modifier.clickable {
+                                            comboData?.iconos?.let { icons ->
+                                                if (icons.isNotEmpty()) {
+                                                    val currentIndex = icons.indexOfFirst { it.codigo == formState.iconoCodigo }
+                                                    val nextIndex = (currentIndex + 1) % icons.size
+                                                    viewModel.onIconoChange(icons[nextIndex])
+                                                }
+                                            }
+                                        },
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        Text(
+                                            text = "Cambiar icono aleatorio",
+                                            color = Color(0xFF9E9E9E),
+                                            style = MaterialTheme.typography.bodyMedium
+                                        )
+                                        Icon(
+                                            imageVector = Icons.Default.Refresh,
+                                            contentDescription = null,
+                                            tint = Color(0xFF2D7DFF),
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
                                 }
-                                
-                                Spacer(modifier = Modifier.height(24.dp))
                             }
+                            LvlTextField(
+                                value = formState.nombre,
+                                onValueChange = { viewModel.onNombreChange(it) },
+                                label = "Nombre del proyecto",
+                                placeholder = "Evento de aniversario"
+                            )
+
+                            LvlTextField(
+                                value = formState.descripcion,
+                                onValueChange = { viewModel.onDescripcionChange(it) },
+                                label = "Descripción",
+                                placeholder = "Descripción"
+                            )
+
+                            LvlDropdownField(
+                                label = "Categoría del proyecto",
+                                options = comboData?.categorias?.map { it.nombre ?: "" } ?: emptyList(),
+                                selectedOption = comboData?.categorias?.find { it.id == formState.categoriaId }?.nombre,
+                                onOptionSelected = { selected ->
+                                    val categoria = comboData?.categorias?.find { it.nombre == selected }
+                                    viewModel.onCategoriaChange(categoria)
+                                }
+                            )
+
+                            LvlDropdownField(
+                                label = "Estado del proyecto",
+                                options = comboData?.estados?.map { it.nombre ?: "" } ?: emptyList(),
+                                selectedOption = comboData?.estados?.find { it.codigo == formState.estadoCodigo }?.nombre,
+                                onOptionSelected = { selected ->
+                                    val estado = comboData?.estados?.find { it.nombre == selected }
+                                    viewModel.onEstadoChange(estado)
+                                }
+                            )
+
+                            DatePickerField(
+                                value = formState.fechaInicio,
+                                onValueChange = { viewModel.onFechaInicioChange(it) },
+                                label = "Fecha de inicio",
+                                placeholder = "Fecha de inicio"
+                            )
+
+                            DatePickerField(
+                                value = formState.fechaFin,
+                                onValueChange = { viewModel.onFechaFinChange(it) },
+                                label = "Fecha de finalización",
+                                placeholder = "Fecha de finalización"
+                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "¿Compartir con otros miembros?",
+                                    color = Color(0xFF757575),
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                                Switch(
+                                    checked = formState.compartir,
+                                    onCheckedChange = { viewModel.onCompartirChange(it) },
+                                    colors = SwitchDefaults.colors(
+                                        checkedThumbColor = Color.White,
+                                        checkedTrackColor = Color(0xFF2D7DFF),
+                                        uncheckedThumbColor = Color.White,
+                                        uncheckedTrackColor = Color(0xFFE0E0E0),
+                                        uncheckedBorderColor = Color.Transparent
+                                    )
+                                )
+                            }
+                            
+                            Spacer(modifier = Modifier.height(24.dp))
                         }
                     }
                 }
@@ -250,9 +257,9 @@ fun CreateProjectScreen(
                               formState.categoriaId != null &&
                               formState.estadoCodigo != null &&
                               formState.iconoCodigo != null &&
-                              uiState !is CreateProjectUiState.Creating
+                              !uiState.isCreating
                 ) {
-                    if (uiState is CreateProjectUiState.Creating) {
+                    if (uiState.isCreating) {
                         CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
                     } else {
                         Text(

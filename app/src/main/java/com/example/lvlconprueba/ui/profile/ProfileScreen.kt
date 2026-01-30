@@ -142,18 +142,6 @@ fun ProfileScreen(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     ProfileTextField(
-                        label = "Nombre de empresa",
-                        value = formState.empresa,
-                        onValueChange = { viewModel.onFieldChange(empresa = it) }
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    ProfileTextField(
-                        label = "Cargo en la empresa (Código)",
-                        value = formState.cargoCodigo,
-                        onValueChange = { viewModel.onFieldChange(cargoCodigo = it) }
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    ProfileTextField(
                         label = "Teléfono",
                         value = formState.telefono,
                         onValueChange = { viewModel.onFieldChange(telefono = it) }

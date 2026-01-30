@@ -14,6 +14,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -24,14 +25,13 @@ class CreateProjectViewModel @Inject constructor(
     private val authManager: AuthManager
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<CreateProjectUiState>(CreateProjectUiState.Loading)
+    private val _uiState = MutableStateFlow(CreateProjectUiState())
     val uiState: StateFlow<CreateProjectUiState> = _uiState.asStateFlow()
 
     private val _formState = MutableStateFlow(CreateProjectFormState())
     val formState: StateFlow<CreateProjectFormState> = _formState.asStateFlow()
 
     private val _currentUserId = MutableStateFlow<String?>(null)
-    val currentUserId: StateFlow<String?> = _currentUserId.asStateFlow()
 
     init {
         loadComboData()
@@ -43,82 +43,46 @@ class CreateProjectViewModel @Inject constructor(
             try {
                 val user = authManager.getCurrentUser()
                 _currentUserId.value = user?.usuarioId
-                Log.d("CreateProjectViewModel", "Current user ID: ${user?.usuarioId}")
             } catch (e: Exception) {
                 Log.e("CreateProjectViewModel", "Error loading user ID: ${e.message}")
             }
         }
     }
 
-    private fun loadComboData() {
+    fun loadComboData() {
         viewModelScope.launch {
-            _uiState.value = CreateProjectUiState.Loading
+            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             getProjectInitFormUseCase().collect { result ->
                 result.onSuccess { comboData ->
-                    _uiState.value = CreateProjectUiState.Success(comboData)
-                    if (comboData.iconos.isNotEmpty() && _formState.value.iconoCodigo == null) {
-                        _formState.value = _formState.value.copy(iconoCodigo = comboData.iconos.first().codigo)
-                    }
-                    if (comboData.categorias.isNotEmpty() && _formState.value.categoriaId == null) {
-                        _formState.value = _formState.value.copy(categoriaId = comboData.categorias.first().id)
-                    }
-                    if (comboData.estados.isNotEmpty() && _formState.value.estadoCodigo == null) {
-                        _formState.value = _formState.value.copy(estadoCodigo = comboData.estados.first().codigo)
+                    _uiState.update { it.copy(isLoading = false, comboData = comboData) }
+                    _formState.update { state ->
+                        state.copy(
+                            iconoCodigo = state.iconoCodigo ?: comboData.iconos.firstOrNull()?.codigo,
+                            categoriaId = state.categoriaId ?: comboData.categorias.firstOrNull()?.id,
+                            estadoCodigo = state.estadoCodigo ?: comboData.estados.firstOrNull()?.codigo
+                        )
                     }
                 }.onFailure { error ->
-                    _uiState.value = CreateProjectUiState.Error(error.message ?: "Error al cargar datos del formulario")
+                    _uiState.update { it.copy(isLoading = false, errorMessage = error.message ?: "Error al cargar datos") }
                 }
             }
         }
     }
 
-    fun onNombreChange(nombre: String) {
-        _formState.value = _formState.value.copy(nombre = nombre)
-    }
-
-    fun onDescripcionChange(descripcion: String) {
-        _formState.value = _formState.value.copy(descripcion = descripcion)
-    }
-
-    fun onFechaInicioChange(fechaInicio: String) {
-        _formState.value = _formState.value.copy(fechaInicio = fechaInicio)
-    }
-
-    fun onFechaFinChange(fechaFin: String) {
-        _formState.value = _formState.value.copy(fechaFin = fechaFin)
-    }
-
-    fun onCategoriaChange(categoria: Categoria?) {
-        _formState.value = _formState.value.copy(categoriaId = categoria?.id)
-    }
-
-    fun onEstadoChange(estado: Estado?) {
-        _formState.value = _formState.value.copy(estadoCodigo = estado?.codigo)
-    }
-
-    fun onIconoChange(icono: Icono?) {
-        _formState.value = _formState.value.copy(iconoCodigo = icono?.codigo)
-    }
-
-    fun nextIcono(iconos: List<Icono>) {
-        if (iconos.isEmpty()) return
-        val currentCodigo = _formState.value.iconoCodigo
-        val currentIndex = iconos.indexOfFirst { it.codigo == currentCodigo }
-        val nextIndex = (currentIndex + 1) % iconos.size
-        _formState.value = _formState.value.copy(iconoCodigo = iconos[nextIndex].codigo)
-    }
-
-    fun onCompartirChange(compartir: Boolean) {
-        _formState.value = _formState.value.copy(compartir = compartir)
-    }
+    fun onNombreChange(nombre: String) { _formState.update { it.copy(nombre = nombre) } }
+    fun onDescripcionChange(descripcion: String) { _formState.update { it.copy(descripcion = descripcion) } }
+    fun onFechaInicioChange(fechaInicio: String) { _formState.update { it.copy(fechaInicio = fechaInicio) } }
+    fun onFechaFinChange(fechaFin: String) { _formState.update { it.copy(fechaFin = fechaFin) } }
+    fun onCategoriaChange(categoria: Categoria?) { _formState.update { it.copy(categoriaId = categoria?.id) } }
+    fun onEstadoChange(estado: Estado?) { _formState.update { it.copy(estadoCodigo = estado?.codigo) } }
+    fun onIconoChange(icono: Icono?) { _formState.update { it.copy(iconoCodigo = icono?.codigo) } }
+    fun onCompartirChange(compartir: Boolean) { _formState.update { it.copy(compartir = compartir) } }
 
     fun createProject(onSuccess: () -> Unit) {
         viewModelScope.launch {
-            _uiState.value = CreateProjectUiState.Creating
-            Log.d("CreateProjectViewModel", "Form state: nombre=${_formState.value.nombre}, descripcion=${_formState.value.descripcion}, categoriaId=${_formState.value.categoriaId}, estadoCodigo=${_formState.value.estadoCodigo}, iconoCodigo=${_formState.value.iconoCodigo}, compartir=${_formState.value.compartir}")
-            val proyectoId = ""
+            _uiState.update { it.copy(isCreating = true, errorMessage = null) }
             val project = com.example.lvlconprueba.domain.model.Project(
-                proyectoId = proyectoId,
+                proyectoId = "",
                 categoriaId = _formState.value.categoriaId,
                 usuarioId = _currentUserId.value,
                 codigo = "",
@@ -130,36 +94,51 @@ class CreateProjectViewModel @Inject constructor(
                 fechaFin = _formState.value.fechaFin,
                 compartir = _formState.value.compartir
             )
-            Log.d("CreateProjectViewModel", "Project to send: proyectoId=${project.proyectoId}, categoriaId=${project.categoriaId}, usuarioId=${project.usuarioId}, nombre=${project.nombre}, codigo=${project.codigo}")
 
             createProjectUseCase(project).collect { result ->
                 result.onSuccess {
-                    _uiState.value = CreateProjectUiState.Created
+                    _uiState.update { it.copy(isCreating = false, isCreated = true) }
                     onSuccess()
+                    resetForm()
                 }.onFailure { error ->
-                    _uiState.value = CreateProjectUiState.Error(error.message ?: "Error al crear el proyecto")
-                    Log.e("CreateProjectViewModel", "Error creating project: ${error.message}")
+                    _uiState.update { it.copy(isCreating = false, errorMessage = error.message ?: "Error al crear el proyecto") }
                 }
             }
         }
     }
 
+    fun resetForm() {
+        _formState.value = CreateProjectFormState()
+        _uiState.update { state -> 
+            state.copy(isCreated = false, errorMessage = null) 
+        }
+        // Restore defaults from existing comboData if available
+        _uiState.value.comboData?.let { comboData ->
+            _formState.update { state ->
+                state.copy(
+                    iconoCodigo = comboData.iconos.firstOrNull()?.codigo,
+                    categoriaId = comboData.categorias.firstOrNull()?.id,
+                    estadoCodigo = comboData.estados.firstOrNull()?.codigo
+                )
+            }
+        }
+    }
+
     fun dismissError() {
-        val currentState = _uiState.value
-        if (currentState is CreateProjectUiState.Error) {
-            _uiState.value = CreateProjectUiState.Idle
+        _uiState.update { it.copy(errorMessage = null) }
+        if (_uiState.value.comboData == null) {
+            loadComboData()
         }
     }
 }
 
-sealed class CreateProjectUiState {
-    object Loading : CreateProjectUiState()
-    object Idle : CreateProjectUiState()
-    data class Success(val comboData: ProjectComboData) : CreateProjectUiState()
-    object Creating : CreateProjectUiState()
-    object Created : CreateProjectUiState()
-    data class Error(val message: String) : CreateProjectUiState()
-}
+data class CreateProjectUiState(
+    val isLoading: Boolean = false,
+    val isCreating: Boolean = false,
+    val isCreated: Boolean = false,
+    val comboData: ProjectComboData? = null,
+    val errorMessage: String? = null
+)
 
 data class CreateProjectFormState(
     val nombre: String = "",
