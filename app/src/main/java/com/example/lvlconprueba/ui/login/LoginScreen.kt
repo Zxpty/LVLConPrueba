@@ -30,6 +30,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.lvlconprueba.R
 import com.example.lvlconprueba.ui.theme.LVLConPruebaTheme
+import com.example.lvlconprueba.ui.theme.primaryColor
+import com.example.lvlconprueba.ui.theme.subtitle
 import kotlinx.coroutines.launch
 
 @Composable
@@ -100,7 +102,7 @@ fun LoginContent(
                     append("¡Te damos la bienvenida!\n")
                     append("a ")
                 }
-                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, fontSize = 28.sp, color = Color(0xFF2E86FB))) {
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, fontSize = 28.sp, color = primaryColor)) {
                     append("JIRA Atllassian")
                 }
                 withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, fontSize = 28.sp)) {
@@ -112,7 +114,7 @@ fun LoginContent(
 
         Text(
             text = "Hola, inicia sesión para continuar",
-            style = TextStyle(fontSize = 16.sp, color = Color.Gray),
+            style = TextStyle(fontSize = 16.sp, color = subtitle),
             modifier = Modifier.padding(top = 8.dp)
         )
 
@@ -125,9 +127,12 @@ fun LoginContent(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color(0xFF2E86FB),
-                unfocusedBorderColor = Color(0xFFE0E0E0),
-                focusedLabelColor = Color(0xFF2E86FB)
+                focusedTextColor = Color.Black,
+                unfocusedTextColor = Color.Black,
+                focusedBorderColor = primaryColor,
+                unfocusedBorderColor = Color(0xFFF0F0F0),
+                focusedLabelColor = primaryColor,
+                unfocusedLabelColor = subtitle
             ),
             singleLine = true
         )
@@ -145,13 +150,16 @@ fun LoginContent(
             trailingIcon = {
                 val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
                 IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                    Icon(imageVector = image, contentDescription = null, tint = Color(0xFF2E86FB))
+                    Icon(imageVector = image, contentDescription = null, tint = primaryColor)
                 }
             },
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color(0xFF2E86FB),
-                unfocusedBorderColor = Color(0xFFE0E0E0),
-                focusedLabelColor = Color(0xFF2E86FB)
+                focusedTextColor = Color.Black,
+                unfocusedTextColor = Color.Black,
+                focusedBorderColor = primaryColor,
+                unfocusedBorderColor = Color(0xFFF0F0F0),
+                focusedLabelColor = primaryColor,
+                unfocusedLabelColor = subtitle
             ),
             singleLine = true
         )
@@ -167,12 +175,12 @@ fun LoginContent(
                 Checkbox(
                     checked = rememberMe,
                     onCheckedChange = { rememberMe = it },
-                    colors = CheckboxDefaults.colors(checkedColor = Color(0xFF2E86FB))
+                    colors = CheckboxDefaults.colors(checkedColor = primaryColor)
                 )
-                Text(text = "Recordarme", fontSize = 14.sp)
+                Text(text = "Recordarme", fontSize = 14.sp, color = subtitle)
             }
             TextButton(onClick = {}) {
-                Text(text = "Olvidé mi contraseña", color = Color(0xFF2E86FB), fontSize = 14.sp)
+                Text(text = "Olvidé mi contraseña", color = primaryColor, fontSize = 14.sp)
             }
         }
 
@@ -184,7 +192,7 @@ fun LoginContent(
                 .fillMaxWidth()
                 .height(56.dp),
             shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E86FB)),
+            colors = ButtonDefaults.buttonColors(containerColor = primaryColor),
             enabled = uiState !is LoginUiState.Loading
         ) {
             if (uiState is LoginUiState.Loading) {

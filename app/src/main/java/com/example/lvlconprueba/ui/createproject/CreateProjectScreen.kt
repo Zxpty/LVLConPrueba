@@ -25,6 +25,8 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.lvlconprueba.R
 import com.example.lvlconprueba.ui.home.getIconRes
+import com.example.lvlconprueba.ui.theme.primaryColor
+import com.example.lvlconprueba.ui.theme.subtitle
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -69,7 +71,7 @@ fun CreateProjectScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Atrás",
-                            tint = Color(0xFF2D7DFF)
+                            tint = primaryColor
                         )
                     }
                     Text(
@@ -86,7 +88,7 @@ fun CreateProjectScreen(
                 Box(modifier = Modifier.weight(1f)) {
                     if (uiState.isLoading) {
                         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            CircularProgressIndicator(color = Color(0xFF2D7DFF))
+                            CircularProgressIndicator(color = primaryColor)
                         }
                     } else if (uiState.errorMessage != null && uiState.comboData == null) {
                         Column(
@@ -156,13 +158,13 @@ fun CreateProjectScreen(
                                     ) {
                                         Text(
                                             text = "Cambiar icono aleatorio",
-                                            color = Color(0xFF9E9E9E),
+                                            color = subtitle,
                                             style = MaterialTheme.typography.bodyMedium
                                         )
                                         Icon(
                                             imageVector = Icons.Default.Refresh,
                                             contentDescription = null,
-                                            tint = Color(0xFF2D7DFF),
+                                            tint = primaryColor,
                                             modifier = Modifier.size(20.dp)
                                         )
                                     }
@@ -222,7 +224,7 @@ fun CreateProjectScreen(
                             ) {
                                 Text(
                                     text = "¿Compartir con otros miembros?",
-                                    color = Color(0xFF757575),
+                                    color = subtitle,
                                     style = MaterialTheme.typography.bodyLarge
                                 )
                                 Switch(
@@ -230,7 +232,7 @@ fun CreateProjectScreen(
                                     onCheckedChange = { viewModel.onCompartirChange(it) },
                                     colors = SwitchDefaults.colors(
                                         checkedThumbColor = Color.White,
-                                        checkedTrackColor = Color(0xFF2D7DFF),
+                                        checkedTrackColor = primaryColor,
                                         uncheckedThumbColor = Color.White,
                                         uncheckedTrackColor = Color(0xFFE0E0E0),
                                         uncheckedBorderColor = Color.Transparent
@@ -250,7 +252,7 @@ fun CreateProjectScreen(
                         .height(56.dp),
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF2D7DFF),
+                        containerColor = primaryColor,
                         contentColor = Color.White
                     ),
                     enabled = formState.nombre.isNotBlank() &&
@@ -286,20 +288,20 @@ fun LvlTextField(
         onValueChange = onValueChange,
         modifier = Modifier.fillMaxWidth(),
         label = { Text(label) },
-        placeholder = { Text(placeholder, color = Color(0xFF9E9E9E)) },
+        placeholder = { Text(placeholder, color = subtitle) },
         shape = RoundedCornerShape(12.dp),
         colors = OutlinedTextFieldDefaults.colors(
             focusedTextColor = Color.Black,
             unfocusedTextColor = Color.Black,
-            focusedBorderColor = Color(0xFF2D7DFF),
+            focusedBorderColor = primaryColor,
             unfocusedBorderColor = Color(0xFFF0F0F0),
-            focusedLabelColor = Color(0xFF2D7DFF),
-            unfocusedLabelColor = Color(0xFF9E9E9E),
+            focusedLabelColor = primaryColor,
+            unfocusedLabelColor = subtitle,
             focusedContainerColor = Color.White,
             unfocusedContainerColor = Color.White
         ),
         trailingIcon = if (trailingIcon != null) {
-            { Icon(trailingIcon, contentDescription = null, tint = Color(0xFF2D7DFF)) }
+            { Icon(trailingIcon, contentDescription = null, tint = primaryColor) }
         } else null,
         singleLine = true
     )
@@ -324,12 +326,12 @@ fun LvlDropdownField(
             onValueChange = {},
             readOnly = true,
             label = { Text(label) },
-            placeholder = { Text(label, color = Color(0xFF9E9E9E)) },
+            placeholder = { Text(label, color = subtitle) },
             trailingIcon = {
                 Icon(
                     imageVector = Icons.Default.KeyboardArrowDown,
                     contentDescription = null,
-                    tint = Color(0xFF2D7DFF)
+                    tint = primaryColor
                 )
             },
             modifier = Modifier
@@ -339,10 +341,10 @@ fun LvlDropdownField(
             colors = OutlinedTextFieldDefaults.colors(
                 focusedTextColor = Color.Black,
                 unfocusedTextColor = Color.Black,
-                focusedBorderColor = Color(0xFF2D7DFF),
+                focusedBorderColor = primaryColor,
                 unfocusedBorderColor = Color(0xFFF0F0F0),
-                focusedLabelColor = Color(0xFF2D7DFF),
-                unfocusedLabelColor = Color(0xFF9E9E9E),
+                focusedLabelColor = primaryColor,
+                unfocusedLabelColor = subtitle,
                 focusedContainerColor = Color.White,
                 unfocusedContainerColor = Color.White
             )
@@ -354,7 +356,7 @@ fun LvlDropdownField(
         ) {
             options.forEach { option ->
                 DropdownMenuItem(
-                    text = { Text(option) },
+                    text = { Text(option, color = Color.Black) },
                     onClick = {
                         onOptionSelected(option)
                         expanded = false
@@ -411,13 +413,13 @@ fun DatePickerField(
         onValueChange = {},
         readOnly = true,
         label = { Text(label) },
-        placeholder = { Text(placeholder, color = Color(0xFF9E9E9E)) },
+        placeholder = { Text(placeholder, color = subtitle) },
         trailingIcon = {
             IconButton(onClick = { showDatePicker = true }) {
                 Icon(
                     imageVector = Icons.Default.DateRange,
                     contentDescription = null,
-                    tint = Color(0xFF2D7DFF)
+                    tint = primaryColor
                 )
             }
         },
@@ -428,10 +430,10 @@ fun DatePickerField(
         colors = OutlinedTextFieldDefaults.colors(
             focusedTextColor = Color.Black,
             unfocusedTextColor = Color.Black,
-            focusedBorderColor = Color(0xFF2D7DFF),
+            focusedBorderColor = primaryColor,
             unfocusedBorderColor = Color(0xFFF0F0F0),
-            focusedLabelColor = Color(0xFF2D7DFF),
-            unfocusedLabelColor = Color(0xFF9E9E9E),
+            focusedLabelColor = primaryColor,
+            unfocusedLabelColor = subtitle,
             focusedContainerColor = Color.White,
             unfocusedContainerColor = Color.White
         )
